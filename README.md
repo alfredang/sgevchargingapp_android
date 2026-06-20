@@ -14,6 +14,13 @@
 
 </div>
 
+## Screenshots
+
+<p align="center">
+  <img src="play-assets/phone-screenshot-1.png" width="32%" alt="Map with nearby chargers" />
+  <img src="play-assets/phone-screenshot-2.png" width="32%" alt="Result card and station chips" />
+</p>
+
 ## About
 
 SG EV Charging (Android) is a native Kotlin / Jetpack Compose app for locating electric vehicle
