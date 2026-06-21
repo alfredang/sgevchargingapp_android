@@ -27,22 +27,37 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: Preflight — skip cleanly until secrets are configured
+        id: pre
+        run: |
+          if [ -z "${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}" ] || [ -z "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Play/keystore secrets not set yet — skipping release. Add repo secrets to enable auto-publish."
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/checkout@v4
+        if: steps.pre.outputs.configured == 'true'
 
       - uses: actions/setup-java@v4
+        if: steps.pre.outputs.configured == 'true'
         with:
           distribution: temurin
           java-version: '17'
 
       - name: Set up Gradle
+        if: steps.pre.outputs.configured == 'true'
         uses: gradle/actions/setup-gradle@v4
 
       - name: Decode keystore
+        if: steps.pre.outputs.configured == 'true'
         run: |
           mkdir -p keystore
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > keystore/release.jks
 
       - name: Write local.properties
+        if: steps.pre.outputs.configured == 'true'
         run: |
           {
             echo "sdk.dir=$ANDROID_SDK_ROOT"
@@ -55,6 +70,7 @@ jobs:
           } > local.properties
 
       - name: Generate release notes from CHANGELOG
+        if: steps.pre.outputs.configured == 'true'
         run: |
           mkdir -p distribution/whatsnew
           awk '
@@ -66,9 +82,11 @@ jobs:
             echo "Bug fixes and improvements." > distribution/whatsnew/whatsnew-en-US
 
       - name: Build signed AAB
+        if: steps.pre.outputs.configured == 'true'
         run: ./gradlew :app:bundleRelease -PversionCodeOverride=$(( ${{ github.run_number }} + 100 ))
 
       - name: Upload to Google Play
+        if: steps.pre.outputs.configured == 'true'
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
