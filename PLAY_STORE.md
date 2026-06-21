@@ -28,11 +28,14 @@ Credentials live in `local.properties` (NOT committed). **Back up the keystore
 and passwords** — losing them means you can never update this app again.
 
 ```
-keystore : keystore/sgevcharging-release.jks
+keystore : keystore/sgevcharging-release.jks   (NOT committed — gitignored)
 alias    : sgevcharging
-store pw  : ***REDACTED***
-key pw    : ***REDACTED***   (PKCS12 forces key pw == store pw)
+store pw  : <stored privately; see local.properties / your password manager>
+key pw    : <same as store pw — PKCS12 forces key pw == store pw>
 ```
+
+> Never put the real keystore passwords in any committed file. They belong only in
+> `local.properties` (gitignored) and your password manager / CI secrets.
 
 Recommended: enable **Play App Signing** when creating the app (default). Then
 Google manages the production signing key and your upload key is the one above.

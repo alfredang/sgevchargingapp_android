@@ -22,7 +22,8 @@ android {
         applicationId = "com.alfredang.sgevcharging"
         minSdk = 24
         targetSdk = 35
-        versionCode = 2
+        // CI passes -PversionCodeOverride=<n> so each push gets a unique, monotonic code.
+        versionCode = (project.findProperty("versionCodeOverride") as String?)?.toIntOrNull() ?: 2
         versionName = "1.1"
 
         // LTA DataMall account key surfaced as BuildConfig.LTA_DATAMALL_ACCOUNT_KEY

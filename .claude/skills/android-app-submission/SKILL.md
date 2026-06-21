@@ -3,7 +3,7 @@ name: android-app-submission
 description: End-to-end submission of a native Android app (AAB) to the Google Play Console for review and closed testing, driven through the Play Console web UI with Playwright MCP. Covers building/signing the release bundle, creating the app, store listing, ALL App content declarations (incl. Data safety for location), Store settings, creating a closed-testing track, adding the "All Testers" email list, selecting countries, uploading the AAB, and submitting for review. Includes the Misleading Claims (government-data source link) policy and a field-tested rejection-prevention checklist. Use when asked to "submit/publish an Android app", "push to Play Store", "closed test", or to fix a Play policy rejection.
 license: MIT
 metadata:
-  version: "1.1.0"
+  version: "1.3.0"
 ---
 
 # Android App Submission — Play Console (closed testing)
@@ -17,11 +17,13 @@ validated end-to-end on a real submission (and a real rejection + fix).
 
 1. Build + sign the AAB (§0).
 2. Create app → Store listing → all 10 App content declarations → Store settings (§2–§5).
-3. **Closed testing track → Create release → upload AAB → release notes** (§6.1).
-4. **Testers tab → tick the "All Testers" email list → Save** (§6.2). ← never skip; a track
+3. **Update `CHANGELOG.md`** for this `versionName (versionCode)` (§0.1) — its top entry is
+   the source of truth for the Play release notes.
+4. **Closed testing track → Create release → upload AAB → release notes (from CHANGELOG)** (§6.1).
+5. **Testers tab → tick the "All Testers" email list → Save** (§6.2). ← never skip; a track
    with no tester list reaches no one.
-5. **Countries/regions → add at least one (e.g. Singapore) → Save** (§6.3).
-6. **Submit for Closed testing:** Release **Review → Save** → **Go to overview** →
+6. **Countries/regions → add at least one (e.g. Singapore) → Save** (§6.3).
+7. **Submit for Closed testing:** Release **Review → Save** → **Go to overview** →
    **Submit N changes for review → Send changes for review** (§7).
 
 > The app's row in the app list stays **"Draft"** until the first release is *approved*; while
@@ -56,9 +58,30 @@ real values. The console base is
   Verify it is signed: `jarsigner -verify .../app-release.aab` → "jar verified".
 - **Google Maps key** (if used) in `local.properties` as `MAPS_API_KEY` (manifest placeholder);
   third-party data keys (e.g. `LTA_DATAMALL_ACCOUNT_KEY`) surfaced via `BuildConfig`.
-- A **privacy policy URL** that is publicly reachable. Easiest: a `docs/privacy-policy.html`
-  page served by **GitHub Pages** (`gh api -X POST repos/<owner>/<repo>/pages -f
-  "source[branch]=main" -f "source[path]=/docs"`). Poll until HTTP 200 before using it.
+- A **privacy policy URL** that is publicly reachable. **Default to the company policy
+  `https://www.tertiaryinfotech.com/privacy` unless the user gives a different URL.** If they
+  want an app-specific page instead, host a `docs/privacy-policy.html` via **GitHub Pages**
+  (`gh api -X POST repos/<owner>/<repo>/pages -f "source[branch]=main" -f "source[path]=/docs"`)
+  and poll until HTTP 200 before using it.
+
+## 0.1 Maintain a CHANGELOG.md (every release)
+
+Keep a `CHANGELOG.md` at the repo root in [Keep a Changelog](https://keepachangelog.com)
+format. **Every time you bump `versionCode`/`versionName`, add a new entry** before building:
+
+```markdown
+## [<versionName>] — <YYYY-MM-DD> · versionCode <N>
+
+### Added / Changed / Fixed
+- <user-facing notes>
+
+### Play submission
+- Track, testers (e.g. All Testers), countries, submission date; note any rejection + fix.
+```
+
+The newest entry's bullets are the **single source of truth** for the Play **release notes**
+(§6.1) — copy them into the `<en-US>…</en-US>` block so the store, git history, and reviewers
+all agree. Commit the CHANGELOG with the version bump.
 
 ## 1. Driving the console with Playwright MCP — gotchas
 
@@ -103,7 +126,8 @@ All of these must be **Actioned** (10 items). Direct slugs:
 `content-rating-overview`, `target-audience-content`, `data-privacy-security` (Data safety),
 `ad-id-declaration`, `government-apps`, `finance`, `health`.
 
-- **Privacy policy:** paste the public URL.
+- **Privacy policy:** paste the public URL — default
+  **`https://www.tertiaryinfotech.com/privacy`** unless the user specifies another.
 - **Ads:** "No, my app does not contain ads" (unless it does).
 - **Sign in details / App access:** "No" if nothing is gated behind login.
 - **Content rating:** Start questionnaire → email + category **All Other App Types** + accept
@@ -134,7 +158,8 @@ the steps on the Dashboard**" until BOTH are set. Type the email with real keyst
 ## 6. Closed testing track  `…/closed-testing` → Manage track
 
 1. **Create release** → upload `app-release.aab` (Play App Signing is on by default), set a
-   release name and **release notes** (`<en-US>…</en-US>`).
+   release name and **release notes** (`<en-US>…</en-US>`) — copy the bullets from the latest
+   `CHANGELOG.md` entry (§0.1) so the store and git history match.
 2. **Testers tab → add the "All Testers" email list (REQUIRED every time).**
    - Open the track → **Testers** tab → under **Email lists**, tick the **"All Testers"** row.
      The checkbox is a `mat-checkbox` (class/`aria-checked` reads are unreliable) — **verify by
