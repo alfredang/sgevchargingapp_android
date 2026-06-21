@@ -3,7 +3,7 @@ name: android-app-submission
 description: End-to-end submission of a native Android app (AAB) to the Google Play Console for review and closed testing, driven through the Play Console web UI with Playwright MCP. Covers building/signing the release bundle, creating the app, store listing, ALL App content declarations (incl. Data safety for location), Store settings, creating a closed-testing track, adding the "All Testers" email list, selecting countries, uploading the AAB, and submitting for review. Includes the Misleading Claims (government-data source link) policy and a field-tested rejection-prevention checklist. Use when asked to "submit/publish an Android app", "push to Play Store", "closed test", or to fix a Play policy rejection.
 license: MIT
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # Android App Submission — Play Console (closed testing)
@@ -12,6 +12,22 @@ Submit a native Android app to **Google Play** for **review + closed testing**. 
 simple public API for first-time app setup without a Play Developer **service account**, so
 this workflow drives the **Play Console web UI with Playwright MCP**. Everything below was
 validated end-to-end on a real submission (and a real rejection + fix).
+
+## Quick recipe (the must-not-skip path)
+
+1. Build + sign the AAB (§0).
+2. Create app → Store listing → all 10 App content declarations → Store settings (§2–§5).
+3. **Closed testing track → Create release → upload AAB → release notes** (§6.1).
+4. **Testers tab → tick the "All Testers" email list → Save** (§6.2). ← never skip; a track
+   with no tester list reaches no one.
+5. **Countries/regions → add at least one (e.g. Singapore) → Save** (§6.3).
+6. **Submit for Closed testing:** Release **Review → Save** → **Go to overview** →
+   **Submit N changes for review → Send changes for review** (§7).
+
+> The app's row in the app list stays **"Draft"** until the first release is *approved*; while
+> review is pending it reads **"In review"**. That is expected — confirm success on the track
+> page (`Release N (x.y) in review`) and on Publishing overview ("Changes in review"), not the
+> Draft label.
 
 Replace `<DEV_ID>` (developer account id) and `<APP_ID>` (numeric app id) in URLs with the
 real values. The console base is
@@ -119,20 +135,34 @@ the steps on the Dashboard**" until BOTH are set. Type the email with real keyst
 
 1. **Create release** → upload `app-release.aab` (Play App Signing is on by default), set a
    release name and **release notes** (`<en-US>…</en-US>`).
-2. **Testers tab** → either reuse an existing email list (e.g. **"All Testers"**) by ticking
-   it, or **Create email list** ("Add email addresses" field needs real typing + Enter to
-   chip the address) → confirm "Create" → tick the list → **Save**.
-   - To satisfy the user's standard ask, **add the "All Testers" list** to every closed track.
+2. **Testers tab → add the "All Testers" email list (REQUIRED every time).**
+   - Open the track → **Testers** tab → under **Email lists**, tick the **"All Testers"** row.
+     The checkbox is a `mat-checkbox` (class/`aria-checked` reads are unreliable) — **verify by
+     screenshot** that the box is filled blue, not by DOM scraping.
+   - Click **Save** (footer). Save then greys out = the list is committed to the track.
+   - If "All Testers" does not exist yet, **Create email list**: List name + the
+     **"Add email addresses"** field needs **real typing + Enter** to chip each address →
+     confirm **Create** → tick it → **Save**.
+   - You can tick more than one list; always include **All Testers**.
 3. **Countries / regions tab** → **Add countries / regions** → search & tick (e.g. Singapore,
    or select-all) → **Save**.
 
-## 7. Send for review
+## 7. Submit for Closed testing (send for review)
 
-Release **Review** step: the only enabled action is **Save** (other unreviewed changes are
-batched). Save → a dialog offers **Go to overview** → on **Publishing overview** click
-**Submit N changes for review** → confirm **Send changes for review**. Pre-checks run
-(~14 min) then it goes to Google review (typically hours–7 days). Two warnings are harmless:
-*no deobfuscation file* and *no native debug symbols*.
+On the release **Review** step the only enabled action is **Save** (other unreviewed changes
+are batched together). Then:
+
+1. **Save** → a dialog appears → **Go to overview**.
+2. On **Publishing overview**, click **Submit N changes for review**.
+3. Confirm **Send changes for review** in the dialog.
+
+Pre-checks run (~14 min) then it goes to Google review (typically hours–7 days). Two warnings
+are harmless: *no deobfuscation file* and *no native debug symbols*.
+
+**Verify it actually submitted** (the app row still says "Draft" — that's fine):
+- Closed testing track page → `Active · Release N (x.y) in review · 1 country / region`.
+- Publishing overview → **Changes in review** lists `Closed testing – <track> → N (x.y) Start
+  full rollout`.
 
 After approval, share the **opt-in URL** (Closed testing → track → Testers) with testers; they
 must accept before installing from Play.
